@@ -177,6 +177,10 @@
                         {
                             "name": "0WEBSITE_CONTENTSHARE",
                             "value": "[variables('contentShare')]"
+                        },
+                        {
+                            "name": "AzureWebJobsStorage__accountName",
+                            "value": "[variables('contentShare')]"
                         }
                     ],
                     "cors": {
