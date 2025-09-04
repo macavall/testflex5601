@@ -3,38 +3,114 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "name": {
-            "type": "string"
+            "type": "string",
+            "defaultValue": "[concat('funcapp', uniqueString(resourceGroup().id))]",
+            "metadata": {
+                "description": "Name of the Function App"
+            }
         },
         "location": {
-            "type": "string"
+            "type": "string",
+            "defaultValue": "[resourceGroup().location]",
+            "metadata": {
+                "description": "Location for all resources"
+            }
         },
         "use32BitWorkerProcess": {
-            "type": "bool"
+            "type": "bool",
+            "defaultValue": false,
+            "metadata": {
+                "description": "Use 32-bit worker process"
+            }
         },
         "ftpsState": {
-            "type": "string"
+            "type": "string",
+            "defaultValue": "FtpsOnly",
+            "allowedValues": ["AllAllowed", "FtpsOnly", "Disabled"],
+            "metadata": {
+                "description": "State of FTP/FTPS service"
+            }
         },
         "storageAccountName": {
-            "type": "string"
+            "type": "string",
+            "defaultValue": "[concat('store', uniqueString(resourceGroup().id))]",
+            "metadata": {
+                "description": "Name of the storage account"
+            }
         },
         "linuxFxVersion": {
-            "type": "string"
+            "type": "string",
+            "defaultValue": "DOTNET-ISOLATED|8.0",
+            "metadata": {
+                "description": "Linux runtime stack"
+            }
+        },
+        "sku": {
+            "type": "string",
+            "defaultValue": "PremiumV2",
+            "allowedValues": ["Dynamic", "Free", "Shared", "Basic", "Standard", "PremiumV2", "PremiumV3"],
+            "metadata": {
+                "description": "The pricing tier for the App Service plan"
+            }
+        },
+        "skuCode": {
+            "type": "string",
+            "defaultValue": "P1v2",
+            "allowedValues": ["Y1", "F1", "D1", "B1", "B2", "B3", "S1", "S2", "S3", "P1v2", "P2v2", "P3v2", "P1v3", "P2v3", "P3v3"],
+            "metadata": {
+                "description": "The SKU code for the App Service plan"
+            }
+        },
+        "workerSize": {
+            "type": "string",
+            "defaultValue": "Small",
+            "allowedValues": ["Small", "Medium", "Large"],
+            "metadata": {
+                "description": "Worker size for the App Service plan"
+            }
+        },
+        "workerSizeId": {
+            "type": "string",
+            "defaultValue": "0",
+            "allowedValues": ["0", "1", "2"],
+            "metadata": {
+                "description": "Worker size ID for the App Service plan (0=Small, 1=Medium, 2=Large)"
+            }
+        },
+        "numberOfWorkers": {
+            "type": "string",
+            "defaultValue": "1",
+            "metadata": {
+                "description": "Number of workers for the App Service plan"
+            }
         },
         "hostingPlanName": {
-            "type": "string"
+            "type": "string",
+            "defaultValue": "[concat('plan', uniqueString(resourceGroup().id))]",
+            "metadata": {
+                "description": "Name of the App Service plan"
+            }
         },
         "serverFarmResourceGroup": {
-            "type": "string"
+            "type": "string",
+            "defaultValue": "[resourceGroup().name]",
+            "metadata": {
+                "description": "Resource group for the App Service plan"
+            }
         },
         "alwaysOn": {
-            "type": "bool"
+            "type": "bool",
+            "defaultValue": true,
+            "metadata": {
+                "description": "Always On feature for the Function App"
+            }
         }
     },
     "variables": {
+        "contentShare": "[concat(toLower(parameters('name')), 'content')]",
         "appInsightsName": "[concat(parameters('name'), 'ai')]",
         "userAssignedIdentityName": "[concat(parameters('name'), 'uami')]",
-        "workspaceName": "[concat(parameters('name'), 'workspace')]",
-        "contentShare": "[concat(toLower(parameters('name')), 'content')]"
+        "workspaceName": "[concat(parameters('name'), 'workspace')]"
     },
     "resources": [
         {
@@ -48,6 +124,7 @@
             },
             "dependsOn": [
                 "[resourceId('Microsoft.Insights/components', variables('appInsightsName'))]",
+                "[resourceId('Microsoft.Web/serverfarms', parameters('hostingPlanName'))]",
                 "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]"
             ],
             "properties": {
@@ -95,11 +172,11 @@
                             "value": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('userAssignedIdentityName')), '2018-11-30').clientId]"
                         },
                         {
-                            "name": "0WEBSITE_CONTENTAZUREFILECONNECTIONSTRING",
+                            "name": "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING",
                             "value": "[concat('DefaultEndpointsProtocol=https;AccountName=',parameters('storageAccountName'),';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2022-05-01').keys[0].value,';EndpointSuffix=core.windows.net')]"
                         },
                         {
-                            "name": "0WEBSITE_CONTENTSHARE",
+                            "name": "WEBSITE_CONTENTSHARE",
                             "value": "[variables('contentShare')]"
                         }
                     ],
@@ -110,14 +187,15 @@
                     },
                     "use32BitWorkerProcess": "[parameters('use32BitWorkerProcess')]",
                     "ftpsState": "[parameters('ftpsState')]",
-                    "linuxFxVersion": "[parameters('linuxFxVersion')]"
+                    "linuxFxVersion": "[parameters('linuxFxVersion')]",
+                    "alwaysOn": "[parameters('alwaysOn')]"
                 },
                 "clientAffinityEnabled": false,
                 "virtualNetworkSubnetId": null,
                 "functionsRuntimeAdminIsolationEnabled": false,
                 "publicNetworkAccess": "Enabled",
                 "httpsOnly": true,
-                "serverFarmId": "[concat('/subscriptions/', subscription().subscriptionId, '/resourcegroups/', parameters('serverFarmResourceGroup'), '/providers/Microsoft.Web/serverfarms/', parameters('hostingPlanName'))]"
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('hostingPlanName'))]"
             },
             "resources": [
                 {
@@ -151,11 +229,33 @@
             }
         },
         {
+            "apiVersion": "2018-11-01",
+            "name": "[parameters('hostingPlanName')]",
+            "type": "Microsoft.Web/serverfarms",
+            "location": "[parameters('location')]",
+            "kind": "linux",
+            "tags": {},
+            "dependsOn": [],
+            "properties": {
+                "name": "[parameters('hostingPlanName')]",
+                "workerSize": "[parameters('workerSize')]",
+                "workerSizeId": "[parameters('workerSizeId')]",
+                "numberOfWorkers": "[parameters('numberOfWorkers')]",
+                "reserved": true,
+                "maximumElasticWorkerCount": 20,
+                "zoneRedundant": false
+            },
+            "sku": {
+                "Tier": "[parameters('sku')]",
+                "Name": "[parameters('skuCode')]"
+            }
+        },
+        {
             "apiVersion": "2020-02-02-preview",
             "name": "[variables('appInsightsName')]",
-            "type": "microsoft.insights/components",
+            "type": "Microsoft.Insights/components",
             "location": "[parameters('location')]",
-            "tags": null,
+            "tags": {},
             "dependsOn": [
                 "[resourceId('Microsoft.OperationalInsights/workspaces', variables('workspaceName'))]"
             ],
@@ -185,7 +285,7 @@
             "name": "[parameters('storageAccountName')]",
             "dependsOn": [],
             "location": "[parameters('location')]",
-            "tags": null,
+            "tags": {},
             "sku": {
                 "name": "Standard_LRS"
             },
@@ -256,7 +356,7 @@
                             "apiVersion": "2022-04-01",
                             "name": "[guid(subscription().id, resourceGroup().id, parameters('name'), '/providers/Microsoft.Authorization/roleDefinitions/3913510d-42f4-4e42-8a64-420c390055eb')]",
                             "type": "Microsoft.Authorization/roleAssignments",
-                            "scope": "[concat('microsoft.insights/components/', variables('appInsightsName'))]",
+                            "scope": "[concat('Microsoft.Insights/components/', variables('appInsightsName'))]",
                             "properties": {
                                 "roleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/3913510d-42f4-4e42-8a64-420c390055eb')]",
                                 "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('userAssignedIdentityName')), '2018-11-30').principalId]",
