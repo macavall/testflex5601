@@ -180,7 +180,7 @@
                         },
                         {
                             "name": "AzureWebJobsStorage__accountName",
-                            "value": "[variables('contentShare')]"
+                            "value": "[parameters('storageAccountName')]"
                         }
                     ],
                     "cors": {
