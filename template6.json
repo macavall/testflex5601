@@ -109,8 +109,7 @@
     "variables": {
         "contentShare": "[concat(toLower(parameters('name')), 'content')]",
         "appInsightsName": "[concat(parameters('name'), 'ai')]",
-        "userAssignedIdentityName": "[concat(parameters('name'), 'uami')]",
-        "workspaceName": "[concat(parameters('name'), 'workspace')]"
+        "userAssignedIdentityName": "[concat(parameters('name'), 'uami')]"
     },
     "resources": [
         {
@@ -248,35 +247,6 @@
             "sku": {
                 "Tier": "[parameters('sku')]",
                 "Name": "[parameters('skuCode')]"
-            }
-        },
-        {
-            "apiVersion": "2020-02-02-preview",
-            "name": "[variables('appInsightsName')]",
-            "type": "Microsoft.Insights/components",
-            "location": "[parameters('location')]",
-            "tags": {},
-            "dependsOn": [
-                "[resourceId('Microsoft.OperationalInsights/workspaces', variables('workspaceName'))]"
-            ],
-            "properties": {
-                "ApplicationId": "[parameters('name')]",
-                "Request_Source": "IbizaWebAppExtensionCreate",
-                "Flow_Type": "Redfield",
-                "Application_Type": "web",
-                "WorkspaceResourceId": "[resourceId('Microsoft.OperationalInsights/workspaces', variables('workspaceName'))]",
-                "DisableLocalAuth": true
-            }
-        },
-        {
-            "apiVersion": "2020-08-01",
-            "name": "[variables('workspaceName')]",
-            "type": "Microsoft.OperationalInsights/workspaces",
-            "location": "[parameters('location')]",
-            "properties": {
-                "sku": {
-                    "name": "PerGB2018"
-                }
             }
         },
         {
