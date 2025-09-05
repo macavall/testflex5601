@@ -268,6 +268,17 @@
             }
         },
         {
+            "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+            "apiVersion": "2022-05-01",
+            "name": "[concat(parameters('storageAccountName'), '/default/', 'container1')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]"
+            ],
+            "properties": {
+                "publicAccess": "None"
+            }
+        },
+        {
             "apiVersion": "2018-11-30",
             "name": "[variables('userAssignedIdentityName')]",
             "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
