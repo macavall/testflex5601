@@ -47,16 +47,16 @@
         },
         "sku": {
             "type": "string",
-            "defaultValue": "PremiumV2",
-            "allowedValues": ["Dynamic", "Free", "Shared", "Basic", "Standard", "PremiumV2", "PremiumV3"],
+            "defaultValue": "ElasticPremium",
+            "allowedValues": ["Dynamic", "Free", "Shared", "Basic", "Standard", "PremiumV2", "PremiumV3", "ElasticPremium"],
             "metadata": {
                 "description": "The pricing tier for the App Service plan"
             }
         },
         "skuCode": {
             "type": "string",
-            "defaultValue": "P1v2",
-            "allowedValues": ["Y1", "F1", "D1", "B1", "B2", "B3", "S1", "S2", "S3", "P1v2", "P2v2", "P3v2", "P1v3", "P2v3", "P3v3"],
+            "defaultValue": "EP1",
+            "allowedValues": ["Y1", "F1", "D1", "B1", "B2", "B3", "S1", "S2", "S3", "P1v2", "P2v2", "P3v2", "P1v3", "P2v3", "P3v3", "EP1"],
             "metadata": {
                 "description": "The SKU code for the App Service plan"
             }
@@ -71,8 +71,8 @@
         },
         "workerSizeId": {
             "type": "string",
-            "defaultValue": "0",
-            "allowedValues": ["0", "1", "2"],
+            "defaultValue": "3",
+            "allowedValues": ["0", "1", "2", "3"],
             "metadata": {
                 "description": "Worker size ID for the App Service plan (0=Small, 1=Medium, 2=Large)"
             }
