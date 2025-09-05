@@ -277,7 +277,38 @@
         {
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2021-04-01",
-            "name": "StorageBlobDataOwnerRoleAssignmentTemplate",
+            "name": "StorageAccountContributorRoleAssignment",
+            "dependsOn": [
+                "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('userAssignedIdentityName'))]",
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {},
+                    "variables": {},
+                    "resources": [
+                        {
+                            "apiVersion": "2022-04-01",
+                            "name": "[guid(subscription().id, resourceGroup().id, parameters('name'), '/providers/Microsoft.Authorization/roleDefinitions/17d1049b-9a84-46fb-8f53-869881c3d3ab')]",
+                            "type": "Microsoft.Authorization/roleAssignments",
+                            "scope": "[concat('Microsoft.Storage/storageAccounts/', parameters('storageAccountName'))]",
+                            "properties": {
+                                "roleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/17d1049b-9a84-46fb-8f53-869881c3d3ab')]",
+                                "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('userAssignedIdentityName')), '2018-11-30').principalId]",
+                                "principalType": "ServicePrincipal"
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2021-04-01",
+            "name": "StorageBlobDataOwnerRoleAssignment",
             "dependsOn": [
                 "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('userAssignedIdentityName'))]",
                 "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]"
@@ -308,7 +339,7 @@
         {
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2021-04-01",
-            "name": "StorageBlobDataOwnerRoleAssignmentTemplate1",
+            "name": "StorageQueueDataContributorRoleAssignment",
             "dependsOn": [
                 "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('userAssignedIdentityName'))]",
                 "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]"
@@ -323,11 +354,11 @@
                     "resources": [
                         {
                             "apiVersion": "2022-04-01",
-                            "name": "[guid(subscription().id, resourceGroup().id, parameters('name'), '/providers/Microsoft.Authorization/roleDefinitions/bd7917b6-6e5c-4875-8de6-c2b4800f1be6')]",
+                            "name": "[guid(subscription().id, resourceGroup().id, parameters('name'), '/providers/Microsoft.Authorization/roleDefinitions/974c5e8b-45b9-4653-ba55-5f855dd0fb88')]",
                             "type": "Microsoft.Authorization/roleAssignments",
                             "scope": "[concat('Microsoft.Storage/storageAccounts/', parameters('storageAccountName'))]",
                             "properties": {
-                                "roleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/bd7917b6-6e5c-4875-8de6-c2b4800f1be6')]",
+                                "roleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/974c5e8b-45b9-4653-ba55-5f855dd0fb88')]",
                                 "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('userAssignedIdentityName')), '2018-11-30').principalId]",
                                 "principalType": "ServicePrincipal"
                             }
@@ -339,10 +370,10 @@
         {
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2021-04-01",
-            "name": "StorageBlobDataOwnerRoleAssignmentTemplate2",
+            "name": "MonitoringMetricsPublisherRoleAssignment",
             "dependsOn": [
                 "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('userAssignedIdentityName'))]",
-                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]"
+                "[resourceId('Microsoft.Insights/components', variables('appInsightsName'))]"
             ],
             "properties": {
                 "mode": "Incremental",
@@ -354,42 +385,11 @@
                     "resources": [
                         {
                             "apiVersion": "2022-04-01",
-                            "name": "[guid(subscription().id, resourceGroup().id, parameters('name'), '/providers/Microsoft.Authorization/roleDefinitions/519b5f58-eb7e-411a-a5b8-73519dd94892')]",
+                            "name": "[guid(subscription().id, resourceGroup().id, parameters('name'), '/providers/Microsoft.Authorization/roleDefinitions/3913510d-42f4-4e42-8a64-420c390055eb')]",
                             "type": "Microsoft.Authorization/roleAssignments",
-                            "scope": "[concat('Microsoft.Storage/storageAccounts/', parameters('storageAccountName'))]",
+                            "scope": "[concat('Microsoft.Insights/components/', variables('appInsightsName'))]",
                             "properties": {
-                                "roleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/519b5f58-eb7e-411a-a5b8-73519dd94892')]",
-                                "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('userAssignedIdentityName')), '2018-11-30').principalId]",
-                                "principalType": "ServicePrincipal"
-                            }
-                        }
-                    ]
-                }
-            }
-        },
-        {
-            "type": "Microsoft.Resources/deployments",
-            "apiVersion": "2021-04-01",
-            "name": "StorageBlobDataOwnerRoleAssignmentTemplate3",
-            "dependsOn": [
-                "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('userAssignedIdentityName'))]",
-                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]"
-            ],
-            "properties": {
-                "mode": "Incremental",
-                "template": {
-                    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-                    "contentVersion": "1.0.0.0",
-                    "parameters": {},
-                    "variables": {},
-                    "resources": [
-                        {
-                            "apiVersion": "2022-04-01",
-                            "name": "[guid(subscription().id, resourceGroup().id, parameters('name'), '/providers/Microsoft.Authorization/roleDefinitions/8bc5b6ab-0af4-4f3e-afe3-aaa526d5d3b5')]",
-                            "type": "Microsoft.Authorization/roleAssignments",
-                            "scope": "[concat('Microsoft.Storage/storageAccounts/', parameters('storageAccountName'))]",
-                            "properties": {
-                                "roleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/8bc5b6ab-0af4-4f3e-afe3-aaa526d5d3b5')]",
+                                "roleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/3913510d-42f4-4e42-8a64-420c390055eb')]",
                                 "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('userAssignedIdentityName')), '2018-11-30').principalId]",
                                 "principalType": "ServicePrincipal"
                             }
