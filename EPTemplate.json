@@ -1,0 +1,419 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "name": {
+            "type": "string",
+            "defaultValue": "[concat('funcapp', uniqueString(resourceGroup().id))]",
+            "metadata": {
+                "description": "Name of the Function App"
+            }
+        },
+        "location": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().location]",
+            "metadata": {
+                "description": "Location for all resources"
+            }
+        },
+        "use32BitWorkerProcess": {
+            "type": "bool",
+            "defaultValue": false,
+            "metadata": {
+                "description": "Use 32-bit worker process"
+            }
+        },
+        "ftpsState": {
+            "type": "string",
+            "defaultValue": "FtpsOnly",
+            "allowedValues": [
+                "AllAllowed",
+                "FtpsOnly",
+                "Disabled"
+            ],
+            "metadata": {
+                "description": "State of FTP/FTPS service"
+            }
+        },
+        "storageAccountName": {
+            "type": "string",
+            "defaultValue": "[concat('store', uniqueString(resourceGroup().id))]",
+            "metadata": {
+                "description": "Name of the storage account"
+            }
+        },
+        "linuxFxVersion": {
+            "type": "string",
+            "defaultValue": "DOTNET-ISOLATED|8.0",
+            "metadata": {
+                "description": "Linux runtime stack"
+            }
+        },
+        "sku": {
+            "type": "string",
+            "defaultValue": "ElasticPremium",
+            "allowedValues": [
+                "Dynamic",
+                "Free",
+                "Shared",
+                "Basic",
+                "Standard",
+                "PremiumV2",
+                "PremiumV3",
+                "ElasticPremium"
+            ],
+            "metadata": {
+                "description": "The pricing tier for the App Service plan"
+            }
+        },
+        "skuCode": {
+            "type": "string",
+            "defaultValue": "EP1",
+            "allowedValues": [
+                "Y1",
+                "F1",
+                "D1",
+                "B1",
+                "B2",
+                "B3",
+                "S1",
+                "S2",
+                "S3",
+                "P1v2",
+                "P2v2",
+                "P3v2",
+                "P1v3",
+                "P2v3",
+                "P3v3",
+                "EP1"
+            ],
+            "metadata": {
+                "description": "The SKU code for the App Service plan"
+            }
+        },
+        "workerSize": {
+            "type": "string",
+            "defaultValue": "Small",
+            "allowedValues": [
+                "Small",
+                "Medium",
+                "Large"
+            ],
+            "metadata": {
+                "description": "Worker size for the App Service plan"
+            }
+        },
+        "workerSizeId": {
+            "type": "string",
+            "defaultValue": "3",
+            "allowedValues": [
+                "0",
+                "1",
+                "2",
+                "3"
+            ],
+            "metadata": {
+                "description": "Worker size ID for the App Service plan (0=Small, 1=Medium, 2=Large)"
+            }
+        },
+        "numberOfWorkers": {
+            "type": "string",
+            "defaultValue": "1",
+            "metadata": {
+                "description": "Number of workers for the App Service plan"
+            }
+        },
+        "hostingPlanName": {
+            "type": "string",
+            "defaultValue": "[concat('plan', uniqueString(resourceGroup().id))]",
+            "metadata": {
+                "description": "Name of the App Service plan"
+            }
+        },
+        "serverFarmResourceGroup": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().name]",
+            "metadata": {
+                "description": "Resource group for the App Service plan"
+            }
+        },
+        "alwaysOn": {
+            "type": "bool",
+            "defaultValue": true,
+            "metadata": {
+                "description": "Always On feature for the Function App"
+            }
+        }
+    },
+    "variables": {
+        "contentShare": "[concat(toLower(parameters('name')), 'content')]",
+        "appInsightsName": "[concat(parameters('name'), 'ai')]",
+        "userAssignedIdentityName": "[concat(parameters('name'), 'uami')]"
+    },
+    "resources": [
+        {
+            "apiVersion": "2022-03-01",
+            "name": "[parameters('name')]",
+            "type": "Microsoft.Web/sites",
+            "kind": "functionapp,linux",
+            "location": "[parameters('location')]",
+            "tags": {},
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/serverfarms', parameters('hostingPlanName'))]",
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]"
+            ],
+            "properties": {
+                "name": "[parameters('name')]",
+                "siteConfig": {
+                    "appSettings": [
+                        {
+                            "name": "FUNCTIONS_EXTENSION_VERSION",
+                            "value": "~4"
+                        },
+                        {
+                            "name": "FUNCTIONS_WORKER_RUNTIME",
+                            "value": "dotnet-isolated"
+                        },
+                        {
+                            "name": "WEBSITE_USE_PLACEHOLDER_DOTNETISOLATED",
+                            "value": "1"
+                        },
+                        {
+                            "name": "AzureWebJobsStorage__credential",
+                            "value": "managedidentity"
+                        },
+                        {
+                            "name": "AzureWebJobsStorage__blobServiceUri",
+                            "value": "[concat('https://', parameters('storageAccountName'), '.blob.core.windows.net')]"
+                        },
+                        {
+                            "name": "AzureWebJobsStorage__queueServiceUri",
+                            "value": "[concat('https://', parameters('storageAccountName'), '.queue.core.windows.net')]"
+                        },
+                        {
+                            "name": "AzureWebJobsStorage__tableServiceUri",
+                            "value": "[concat('https://', parameters('storageAccountName'), '.table.core.windows.net')]"
+                        },
+                        {
+                            "name": "AzureWebJobsStorage__clientId",
+                            "value": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('userAssignedIdentityName')), '2018-11-30').clientId]"
+                        },
+                        {
+                            "name": "0WEBSITE_CONTENTAZUREFILECONNECTIONSTRING",
+                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=',parameters('storageAccountName'),';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2022-05-01').keys[0].value,';EndpointSuffix=core.windows.net')]"
+                        },
+                        {
+                            "name": "0WEBSITE_CONTENTSHARE",
+                            "value": "[variables('contentShare')]"
+                        },
+                        {
+                            "name": "AzureWebJobsStorage__accountName",
+                            "value": "[parameters('storageAccountName')]"
+                        },
+                        {
+                            "name": "WEBSITE_RUN_FROM_PACKAGE",
+                            "value": "https://github.com/macavall/proj1/releases/download/v2/publish2.zip"
+                        }
+                    ],
+                    "cors": {
+                        "allowedOrigins": [
+                            "https://ms.portal.azure.com"
+                        ]
+                    },
+                    "use32BitWorkerProcess": "[parameters('use32BitWorkerProcess')]",
+                    "ftpsState": "[parameters('ftpsState')]",
+                    "linuxFxVersion": "[parameters('linuxFxVersion')]",
+                    "alwaysOn": "[parameters('alwaysOn')]"
+                },
+                "clientAffinityEnabled": false,
+                "virtualNetworkSubnetId": null,
+                "functionsRuntimeAdminIsolationEnabled": false,
+                "publicNetworkAccess": "Enabled",
+                "httpsOnly": true,
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('hostingPlanName'))]"
+            },
+            "resources": [
+                {
+                    "type": "Microsoft.Web/sites/basicPublishingCredentialsPolicies",
+                    "apiVersion": "2022-09-01",
+                    "name": "[concat(parameters('name'), '/scm')]",
+                    "properties": {
+                        "allow": false
+                    },
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Web/sites', parameters('name'))]"
+                    ]
+                },
+                {
+                    "type": "Microsoft.Web/sites/basicPublishingCredentialsPolicies",
+                    "apiVersion": "2022-09-01",
+                    "name": "[concat(parameters('name'), '/ftp')]",
+                    "properties": {
+                        "allow": false
+                    },
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Web/sites', parameters('name'))]"
+                    ]
+                }
+            ],
+            "identity": {
+                "type": "UserAssigned",
+                "userAssignedIdentities": {
+                    "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('userAssignedIdentityName'))]": {}
+                }
+            }
+        },
+        {
+            "apiVersion": "2018-11-01",
+            "name": "[parameters('hostingPlanName')]",
+            "type": "Microsoft.Web/serverfarms",
+            "location": "[parameters('location')]",
+            "kind": "linux",
+            "tags": {},
+            "dependsOn": [],
+            "properties": {
+                "name": "[parameters('hostingPlanName')]",
+                "workerSize": "[parameters('workerSize')]",
+                "workerSizeId": "[parameters('workerSizeId')]",
+                "numberOfWorkers": "[parameters('numberOfWorkers')]",
+                "reserved": true,
+                "maximumElasticWorkerCount": 20,
+                "zoneRedundant": false
+            },
+            "sku": {
+                "Tier": "[parameters('sku')]",
+                "Name": "[parameters('skuCode')]"
+            }
+        },
+        {
+            "apiVersion": "2022-05-01",
+            "type": "Microsoft.Storage/storageAccounts",
+            "name": "[parameters('storageAccountName')]",
+            "dependsOn": [],
+            "location": "[parameters('location')]",
+            "tags": {},
+            "sku": {
+                "name": "Standard_LRS"
+            },
+            "properties": {
+                "supportsHttpsTrafficOnly": true,
+                "minimumTlsVersion": "TLS1_2",
+                "defaultToOAuthAuthentication": true,
+                "allowBlobPublicAccess": false,
+                "allowSharedKeyAccess": true,
+                "publicNetworkAccess": "Enabled"
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+            "apiVersion": "2022-05-01",
+            "name": "[concat(parameters('storageAccountName'), '/default/', 'container1')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]"
+            ],
+            "properties": {
+                "publicAccess": "None"
+            }
+        },
+        {
+            "apiVersion": "2018-11-30",
+            "name": "[variables('userAssignedIdentityName')]",
+            "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
+            "location": "[parameters('location')]",
+            "properties": {}
+        },
+        {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2021-04-01",
+            "name": "StorageAccountContributorRoleAssignment",
+            "dependsOn": [
+                "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('userAssignedIdentityName'))]",
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {},
+                    "variables": {},
+                    "resources": [
+                        {
+                            "apiVersion": "2022-04-01",
+                            "name": "[guid(subscription().id, resourceGroup().id, parameters('name'), '/providers/Microsoft.Authorization/roleDefinitions/17d1049b-9a84-46fb-8f53-869881c3d3ab')]",
+                            "type": "Microsoft.Authorization/roleAssignments",
+                            "scope": "[concat('Microsoft.Storage/storageAccounts/', parameters('storageAccountName'))]",
+                            "properties": {
+                                "roleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/17d1049b-9a84-46fb-8f53-869881c3d3ab')]",
+                                "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('userAssignedIdentityName')), '2018-11-30').principalId]",
+                                "principalType": "ServicePrincipal"
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2021-04-01",
+            "name": "StorageBlobDataOwnerRoleAssignment",
+            "dependsOn": [
+                "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('userAssignedIdentityName'))]",
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {},
+                    "variables": {},
+                    "resources": [
+                        {
+                            "apiVersion": "2022-04-01",
+                            "name": "[guid(subscription().id, resourceGroup().id, parameters('name'), '/providers/Microsoft.Authorization/roleDefinitions/b7e6dc6d-f1e8-4753-8033-0f276bb0955b')]",
+                            "type": "Microsoft.Authorization/roleAssignments",
+                            "scope": "[concat('Microsoft.Storage/storageAccounts/', parameters('storageAccountName'))]",
+                            "properties": {
+                                "roleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/b7e6dc6d-f1e8-4753-8033-0f276bb0955b')]",
+                                "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('userAssignedIdentityName')), '2018-11-30').principalId]",
+                                "principalType": "ServicePrincipal"
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2021-04-01",
+            "name": "StorageQueueDataContributorRoleAssignment",
+            "dependsOn": [
+                "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('userAssignedIdentityName'))]",
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {},
+                    "variables": {},
+                    "resources": [
+                        {
+                            "apiVersion": "2022-04-01",
+                            "name": "[guid(subscription().id, resourceGroup().id, parameters('name'), '/providers/Microsoft.Authorization/roleDefinitions/974c5e8b-45b9-4653-ba55-5f855dd0fb88')]",
+                            "type": "Microsoft.Authorization/roleAssignments",
+                            "scope": "[concat('Microsoft.Storage/storageAccounts/', parameters('storageAccountName'))]",
+                            "properties": {
+                                "roleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/974c5e8b-45b9-4653-ba55-5f855dd0fb88')]",
+                                "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('userAssignedIdentityName')), '2018-11-30').principalId]",
+                                "principalType": "ServicePrincipal"
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    ]
+}
