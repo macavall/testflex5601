@@ -119,7 +119,7 @@
             "kind": "functionapp,linux",
             "location": "[parameters('location')]",
             "tags": {
-                
+                "SecurityControl": "Ignore"
             },
             "dependsOn": [
                 "[resourceId('Microsoft.Web/serverfarms', parameters('hostingPlanName'))]",
