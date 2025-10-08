@@ -143,7 +143,7 @@
                 "clientAffinityEnabled": false,
                 "virtualNetworkSubnetId": "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'testvnet5601', 'OutSub')]",
                 "functionsRuntimeAdminIsolationEnabled": false,
-                "publicNetworkAccess": "Disabled",
+                "publicNetworkAccess": "Enabled",
                 "vnetRouteAllEnabled": true,
                 "vnetContentShareEnabled": true,
                 "httpsOnly": true,
@@ -811,4 +811,5 @@
             }
         }
     ]
+
 }
