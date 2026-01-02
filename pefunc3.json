@@ -10,10 +10,6 @@
             "type": "string",
             "defaultValue": "[concat(parameters('tempName'), uniqueString(resourceGroup().id))]"
         },
-        "name": {
-            "type": "string",
-            "defaultValue": "[concat('funcapp', uniqueString(resourceGroup().id))]"
-        },
         "location": {
             "type": "string",
             "defaultValue": "West US 2"
