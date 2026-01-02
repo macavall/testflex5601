@@ -2,9 +2,13 @@
     "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
+        "tempName": {
+            "type": "string",
+            "defaultValue": "durablelab01"
+        },
         "name": {
             "type": "string",
-            "defaultValue": "[concat('funcapp', uniqueString(resourceGroup().id))]"
+            "defaultValue": "[concat(parameters('tempName'), uniqueString(resourceGroup().id))]"
         },
         "name": {
             "type": "string",
