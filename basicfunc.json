@@ -134,6 +134,9 @@
             "apiVersion": "2022-03-01",
             "name": "[parameters('name')]",
             "location": "[parameters('location')]",
+            "tags": {
+                "SecurityControl": "Ignore"
+            },
             "dependsOn": [
                 "[resourceId('Microsoft.Web/serverfarms', parameters('hostingPlanName'))]",
                 "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]",
