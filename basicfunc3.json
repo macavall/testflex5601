@@ -41,15 +41,15 @@
         },
         "sku": {
             "type": "string",
-            "defaultValue": "Dynamic",
-            "allowedValues": [ "Dynamic", "Basic", "Standard", "PremiumV2", "PremiumV3" ],
+            "defaultValue": "Premium0V3",
+            "allowedValues": [ "Premium0V3", "Dynamic", "Basic", "Standard", "PremiumV2", "PremiumV3" ],
             "metadata": {
                 "description": "SKU tier for the App Service Plan (Dynamic = Consumption plan)."
             }
         },
         "skuCode": {
             "type": "string",
-            "defaultValue": "Y1",
+            "defaultValue": "P0v3",
             "metadata": {
                 "description": "SKU name/code (Y1 for Consumption, B1/P1v2/etc for others)."
             }
