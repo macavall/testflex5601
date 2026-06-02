@@ -1,3 +1,3 @@
 | Elastic Premium | Flex |
 | -- | -- |
-|  [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmacavall%2Ftestflex5601%2Frefs%2Fheads%2Fmaster%2Ftemplate10.json) | Flex [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmacavall%2Ftestflex5601%2Frefs%2Fheads%2Fmaster%2Fpefunc-flex.json) |
+|  [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmacavall%2Ftestflex5601%2Frefs%2Fheads%2Fmaster%2Ftemplate10.json) | [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmacavall%2Ftestflex5601%2Frefs%2Fheads%2Fmaster%2Fpefunc-flex.json) |
