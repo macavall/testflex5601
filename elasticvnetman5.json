@@ -115,6 +115,7 @@
                 "microsoft.insights/components/appinsights5601",
                 "[concat('Microsoft.Web/serverfarms/', parameters('hostingPlanName'))]",
                 "[concat('Microsoft.Storage/storageAccounts/', parameters('storageAccountName'))]",
+                "[resourceId('Microsoft.Storage/storageAccounts/fileServices/shares', parameters('storageAccountName'), 'default', variables('contentShareName'))]",
                 "[variables('userAssignedIdentityResourceId')]",
                 "[resourceId('Microsoft.KeyVault/vaults/secrets', parameters('keyVaultName'), variables('contentShareSecretName'))]",
                 "[resourceId('Microsoft.KeyVault/vaults/accessPolicies', parameters('keyVaultName'), 'add')]",
@@ -151,6 +152,10 @@
                             "value": "[variables('contentShareName')]"
                         },
                         {
+                            "name": "WEBSITE_CONTENTOVERVNET",
+                            "value": "1"
+                        },
+                        {
                             "name": "WEBSITE_SKIP_CONTENTSHARE_VALIDATION",
                             "value": "1"
                         }
@@ -164,6 +169,7 @@
                 },
                 "clientAffinityEnabled": false,
                 "keyVaultReferenceIdentity": "[variables('userAssignedIdentityResourceId')]",
+                "vnetContentShareEnabled": true,
                 "virtualNetworkSubnetId": "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'testvnet5601', 'OutSub')]",
                 "publicNetworkAccess": "Enabled",
                 "vnetRouteAllEnabled": true,
@@ -176,7 +182,7 @@
                     "apiVersion": "2022-09-01",
                     "name": "[concat(parameters('name'), '/scm')]",
                     "properties": {
-                        "allow": false
+                        "allow": true
                     },
                     "dependsOn": [
                         "[resourceId('Microsoft.Web/sites', parameters('name'))]"
@@ -187,7 +193,7 @@
                     "apiVersion": "2022-09-01",
                     "name": "[concat(parameters('name'), '/ftp')]",
                     "properties": {
-                        "allow": false
+                        "allow": true
                     },
                     "dependsOn": [
                         "[resourceId('Microsoft.Web/sites', parameters('name'))]"
@@ -908,6 +914,17 @@
             ],
             "properties": {
                 "publicAccess": "None"
+            }
+        },
+        {
+            "name": "[format('{0}/default/{1}', parameters('storageAccountName'), variables('contentShareName'))]",
+            "type": "Microsoft.Storage/storageAccounts/fileServices/shares",
+            "apiVersion": "2022-05-01",
+            "dependsOn": [
+                "[concat('Microsoft.Storage/storageAccounts/', parameters('storageAccountName'))]"
+            ],
+            "properties": {
+                "shareQuota": 5120
             }
         }
     ]
