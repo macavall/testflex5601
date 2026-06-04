@@ -88,8 +88,7 @@
         "storageBlobDataOwnerRoleId": "b7e6dc6d-f1e8-4753-8033-0f276bb0955b",
         "roleAssignmentName": "[guid(resourceGroup().id, parameters('name'), variables('storageBlobDataOwnerRoleId'))]",
         "contentShareSecretName": "StorageConnectionString",
-        "contentShareName": "[toLower(parameters('name'))]",
-        "storageConnectionString": "[concat('DefaultEndpointsProtocol=https;AccountName=', parameters('storageAccountName'), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2022-05-01').keys[0].value, ';EndpointSuffix=', environment().suffixes.storage)]"
+        "contentShareName": "[toLower(parameters('name'))]"
     },
     "resources": [
         {
@@ -226,7 +225,7 @@
                 "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]"
             ],
             "properties": {
-                "value": "[variables('storageConnectionString')]"
+                "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', parameters('storageAccountName'), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2022-05-01').keys[0].value, ';EndpointSuffix=', environment().suffixes.storage)]"
             }
         },
         {
