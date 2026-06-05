@@ -17,3 +17,5 @@ Compress-Archive -Path .\bin\publish\* -DestinationPath ..\func_publish.zip -For
 
 az functionapp deployment source config-zip -g tester55 -n <APP_NAME> --src ..\func_publish.zip
 ```
+
+https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmacavall%2Ftestflex5601%2Frefs%2Fheads%2Fmaster%2FDeployElasticPremNoVNetLin.json
