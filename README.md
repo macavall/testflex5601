@@ -18,6 +18,7 @@ func init --worker-runtime dotnet-isolated --target-framework net10.0 && func ne
 dotnet publish -c Release -o .\bin\publish
 
 Compress-Archive -Path .\bin\publish\* -DestinationPath ..\func_publish.zip -Force
+zip -r ../func_publish.zip bin/publish/
 
 az functionapp deployment source config-zip -g tester55 -n <APP_NAME> --src ..\func_publish.zip
 ```
